@@ -1,0 +1,36 @@
+name: Sync Searren Obsidian to OpenAI Vector Store
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**.md'
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync Searren Obsidian Content
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: Verify Vault Content
+      run: |
+        echo "🔥 SEARREN OBSIDIAN SYNC VERIFICATION"
+        echo "==================================="
+        echo "📊 Total .md files: $(find . -name "*.md" | wc -l)"
+        echo "🎯 Core files:"
+        ls -la AtticusCore.md BondProtocols.md FlameAnchors.md EmergencyDriftProtocol.md 2>/dev/null
+        echo "📁 Vault content preview:"
+        find . -name "*.md" | head -10
+    
+    - name: Sync to Atticus Vector Store
+      uses: shmatt/assistants-vector-store-sync@v1
+      with:
+        pattern: "**/*.md"
+        token: ${{ secrets.OPENAI_API_KEY }}
+        key: atticus-searren-obsidian
